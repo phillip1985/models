@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xml:lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dynamic OBS models Overlay</title>
+    <!-- Linked external stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .models {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 20px;
+            justify-content: space-around;
+            overflow-x: auto;
+        }
+
+        .model-card {
+            width: 300px;
+            min-width: 300px;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .model-banner {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .model-banner iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .message-pod {
+            background: transparent;
+            margin-top: -50px;
+            padding: 10px 0 0 60px;
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .msg-row {
+            font-size: 1.2em;
+            line-height: 1.3em;
+            background: linear-gradient(135deg, #e6b833 0%, #fff0bd 50%, #dfaa25 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            border-radius: 6px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', 'Noto Sans CJK SC', sans-serif;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            filter: drop-shadow(-1px -1px 0 #000) drop-shadow(1px -1px 0 #000) drop-shadow(-1px 1px 0 #000) drop-shadow(1px 1px 0 #000);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="models" id="models"></div>
+
+    <script>
+        const modelsContainer = document.getElementById('models');
+        let currentData = null;
+
+        // Hardcoded standard setup used if the json file encounters an error
+        const fallbackDefaultData = {
+            "model_count": 2,
+            "models": [
+                {
+                    "bg_glow": "#e2ffdc",
+                    "name": "Model 1a",
+                    "active": true,
+                    "text": ["test 1", "test 2"],
+                    "image_path": "./images/avatar.png"
+                },
+                {
+                    "bg_glow": "#f0eaff",
+                    "name": "Model 2",
+                    "active": true,
+                    "text": [],
+                    "image_path": "./images/placeholder.png"
+                },
+                {
+                    "bg_glow": "#fffbc1",
+                    "name": "Model 3",
+                    "active": true,
+                    "text": [],
+                    "image_path": "./images/placeholder.png"
+                }
+            ]
+        };
+
+        async function updatemodels() {
+            try {
+                // Fetch the JSON file with UTF-8 encoding
+                const response = await fetch(`../models.json?t=${Date.now()}`, {
+                    headers: {
+                        'Accept-Charset': 'UTF-8'
+                    }
+                });
+
+                // If file is missing or server throws an error code, jump to catch block
+                if (!response.ok) {
+                    throw new Error(`HTTP error status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderUI(data);
+
+            } catch (error) {
+                // Catches missing files or broken text formatting instantly
+                console.error("models Error - Loading fallback setup:", error);
+
+                // Build the standard placeholder error nodes immediately
+                renderUI(fallbackDefaultData);
+            }
+        }
+
+        function generateCardSvgUrl(model) {
+            const params = new URLSearchParams();
+
+            // Add model name as text
+            if (model.name) {
+                params.append('text', model.name);
+            }
+
+            // Add image path
+            if (model.image_path) {
+                params.append('image', model.image_path);
+            }
+
+            // Add color from bg_glow
+            if (model.bg_glow) {
+                params.append('color', model.bg_glow);
+            }
+
+            return `../card.svg?${params.toString()}`;
+        }
+
+        function renderUI(data) {
+            // Prevent unnecessary redraw flickering if data hasn't structurally changed
+            if (JSON.stringify(data) === JSON.stringify(currentData)) return;
+            currentData = data;
+
+            // Clear structural layout container workspace
+            modelsContainer.innerHTML = '';
+
+            const activeModels = data.models.filter(model => model.active);
+
+            // Dynamically generate model components matching your exact target CSS elements
+            activeModels.forEach((model) => {
+                const modelCard = document.createElement('div');
+                modelCard.className = 'model-card';
+
+                // Create banner using card.svg with query parameters
+                const bannerDiv = document.createElement('div');
+                bannerDiv.className = 'model-banner';
+
+                const svgObject = document.createElement('object');
+                svgObject.data = generateCardSvgUrl(model);
+                svgObject.type = 'image/svg+xml';
+                svgObject.style.width = '100%';
+                svgObject.style.height = '100%';
+
+                bannerDiv.appendChild(svgObject);
+                modelCard.appendChild(bannerDiv);
+
+                // Add messages if available
+                const mod_message_list = model.text ? model.text : [];
+                if (mod_message_list.length > 0) {
+                    const messagePod = document.createElement('div');
+                    messagePod.className = 'message-pod';
+
+                    const messagesDiv = document.createElement('div');
+                    messagesDiv.className = 'messages';
+
+                    mod_message_list.forEach(msg => {
+                        const msgRow = document.createElement('span');
+                        msgRow.className = 'msg-row';
+                        msgRow.textContent = msg;
+                        messagesDiv.appendChild(msgRow);
+                    });
+                    messagePod.appendChild(messagesDiv);
+                    modelCard.appendChild(messagePod);
+                }
+
+                modelsContainer.appendChild(modelCard);
+            });
+        }
+
+        // Poll system once every second (1000ms)
+        setInterval(updatemodels, 1000);
+        updatemodels();
+    </script>
+
+
+</body>
+</html>
