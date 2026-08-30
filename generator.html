@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Model Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .generator-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .generator-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="color"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        input[type="text"]:focus,
+        input[type="color"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="color"] {
+            height: 45px;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .url-display {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #333;
+        }
+
+        .copy-btn {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .preview-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .preview-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .preview-frame {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: auto;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            aspect-ratio: 1000 / 400;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .example-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-top: 40px;
+        }
+
+        .example-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .example-item {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .example-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .example-url {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 12px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #333;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        .example-preview {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 15px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 15px;
+            aspect-ratio: 1000 / 400;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #1565c0;
+        }
+
+        @media (max-width: 1024px) {
+            .generator-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Stream Model Generator</h1>
+
+        <div class="generator-wrapper">
+            <!-- Generator Panel -->
+            <div class="generator-panel">
+                <h2 style="margin-bottom: 25px; color: #333;">Customize Your model</h2>
+
+                <div class="info-box">
+                    💡 Customize the model text, image, and colors. The preview will update in real-time.
+                </div>
+
+                <form id="modelForm">
+                    <div class="form-group">
+                        <label for="modelText">model Text</label>
+                        <input type="text" id="modelText" placeholder="Enter model text" value="" maxlength="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imagePath">Image Path/URL</label>
+                        <input type="text" id="imagePath" placeholder="e.g., image.png or https://example.com/image.png" value="">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modelColor">model Color</label>
+                        <input type="color" id="modelColor" value="#ffd3ed">
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-generate" onclick="generateURL()">Generate URL</button>
+                        <button type="button" class="btn-reset" onclick="resetForm()">Reset</button>
+                    </div>
+
+                    <div id="urlOutput" style="display: none;">
+                        <div class="url-display" id="generatedURL"></div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard()">📋 Copy URL</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="preview-section">
+                <div class="preview-label">Live Preview</div>
+                <div class="preview-frame" id="previewContainer">
+                    <object id="previewImage" data="card.svg" type="image/svg+xml" style="width: 100%; height: 100%;"></object>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples Section -->
+        <div class="example-section">
+            <div class="example-title">📋 Examples</div>
+            <div id="examplesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const defaultmodelConfig = {
+            text: '',
+            image: '',
+            color: ''
+        };
+
+        function buildmodelURL({ text, image, color }) {
+            const url = new URL('card.svg', window.location.href);
+            if (text) url.searchParams.set('text', text);
+            if (image) url.searchParams.set('image', image);
+            if (color && color !== defaultmodelConfig.color) url.searchParams.set('color', color);
+            return url.href;
+        }
+
+        function generateURL() {
+            const urlText = buildmodelURL({
+                text: document.getElementById('modelText').value,
+                image: document.getElementById('imagePath').value,
+                color: document.getElementById('modelColor').value
+            });
+
+            document.getElementById('urlOutput').style.display = 'block';
+            document.getElementById('generatedURL').textContent = urlText;
+
+            // Update preview
+            document.getElementById('previewImage').data = urlText;
+        }
+
+        function renderExamples() {
+            const examples = [
+                ['Example 1: Custom Text with Color', 'Customize the model text and background color', { text: 'Welcome to Stream', image: '', color: '#ffc0cb' }],
+                ['Example 2: Different Text and Color', 'Another example with different styling', { text: 'Live Stream', image: '', color: '#ffb6c1' }],
+                ['Example 3: With Local Image', 'Load a local image file from your directory', { text: 'Stream Time', image: 'images/avatar.png', color: '#ffe4e1' }],
+                ['Example 4: Default Style', 'The generator\'s default model configuration', defaultmodelConfig]
+            ];
+
+            document.getElementById('examplesContainer').replaceChildren(...examples.map(([title, description, config]) => {
+                const url = buildmodelURL(config);
+                const item = document.createElement('div');
+                item.className = 'example-item';
+                item.innerHTML = `<h3 style="color: #333; margin-bottom: 10px;"></h3><p style="color: #666; margin-bottom: 10px;"></p><div class="example-url"></div><div class="example-preview"><object type="image/svg+xml" style="width: 100%; height: 100%;"></object></div>`;
+                item.querySelector('h3').textContent = title;
+                item.querySelector('p').textContent = description;
+                item.querySelector('.example-url').textContent = url;
+                item.querySelector('object').data = url;
+                return item;
+            }));
+        }
+
+        function copyToClipboard() {
+            const url = document.getElementById('generatedURL').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('modelText').value = defaultmodelConfig.text;
+            document.getElementById('imagePath').value = defaultmodelConfig.image;
+            document.getElementById('modelColor').value = defaultmodelConfig.color;
+            document.getElementById('urlOutput').style.display = 'none';
+            document.getElementById('previewImage').data = 'card.svg';
+        }
+
+        // Generate URL on input change for live preview
+        document.getElementById('modelText').addEventListener('input', generateURL);
+        document.getElementById('imagePath').addEventListener('input', generateURL);
+        document.getElementById('modelColor').addEventListener('change', generateURL);
+
+        renderExamples();
+        generateURL();
+    </script>
+</body>
+</html>

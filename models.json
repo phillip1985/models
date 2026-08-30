@@ -1,0 +1,28 @@
+﻿{
+  "current_model_on_stage": -1,
+  "model_count": 3,
+  "on_stage_title": "On Stage",
+  "models": [
+    {
+      "bg_glow": "#ffdddd",
+      "name": "1号 茉莉",
+      "active": true,
+      "text": ["号 茉莉"],
+      "image_path": "./images/avatar.png"
+    },
+    {
+      "bg_glow": "#f0eaff",
+      "name": "modfe2",
+      "active": true,
+      "text": [],
+      "image_path": ""
+    },
+    {
+      "bg_glow": "#f0eaff",
+      "name": "Model 3",
+      "active": true,
+      "text": [],
+      "image_path": ""
+    }
+  ]
+}
